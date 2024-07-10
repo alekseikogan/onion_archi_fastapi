@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from models.tasks import Tasks
 from repositories.tasks import TasksRepository
 from schemas.tasks import TaskSchemaAdd
+from services.tasks import TasksService
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -26,8 +27,5 @@ async def get_tasks(session: Annotated[AsyncSession, Depends(get_async_session)]
 @router.post('')
 async def add_task(task: TaskSchemaAdd, session: Annotated[AsyncSession, Depends(get_async_session)]):
     """Добавление задачи в базу данных."""
-    # переводим таску в словарик
-    tasks_dict = task.model_dump()
-    # добавляем таску в БД
-    task_id = await TasksRepository().add_one(tasks_dict)
+    task_id = await TasksService(TasksRepository).add_task(task)
     return {'task_id': task_id}
