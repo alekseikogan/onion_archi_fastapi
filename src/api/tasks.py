@@ -1,4 +1,5 @@
 from typing import Annotated
+from api.dependencies import tasks_service
 from db.db import get_async_session
 from fastapi import APIRouter, Depends
 from models.tasks import Tasks
@@ -25,7 +26,9 @@ async def get_tasks(session: Annotated[AsyncSession, Depends(get_async_session)]
 
 
 @router.post('')
-async def add_task(task: TaskSchemaAdd, session: Annotated[AsyncSession, Depends(get_async_session)]):
+async def add_task(
+    task: TaskSchemaAdd,
+    tasks_service: Annotated[TasksService, Depends(tasks_service)]):
     """Добавление задачи в базу данных."""
-    task_id = await TasksService(TasksRepository).add_task(task)
+    task_id = await tasks_service.add_task(task)
     return {'task_id': task_id}
