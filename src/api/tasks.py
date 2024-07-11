@@ -1,14 +1,15 @@
 from typing import Annotated
+
+from fastapi import APIRouter, Depends
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from api.dependencies import tasks_service
 from db.db import get_async_session
-from fastapi import APIRouter, Depends
 from models.tasks import Tasks
 from repositories.tasks import TasksRepository
 from schemas.tasks import TaskSchemaAdd
 from services.tasks import TasksService
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-
 
 router = APIRouter(
     prefix='/tasks',
