@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, update
 
 from db.db import async_session_maker
 
@@ -19,16 +19,27 @@ class SQLAlchemyRepository(AbstractRepository):
 
     model = None
 
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
     async def add_one(self, data: dict):
-        async with async_session_maker() as session:
-            stmt = insert(self.model).values(**data).returning(self.model.id)
-            result = await session.execute(stmt)
-            await session.commit()
-            return result.scalar_one()
+        stmt = insert(self.model).values(**data).returning(self.model.id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one()
+
+    async def edit_one(self, id: int, data: dict):
+        stmt = update(self.model).values(**data).filter_by(id=id).returning(self.model.id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one()
 
     async def find_all(self):
-        async with async_session_maker() as session:
-            stmt = select(self.model)
-            result = await session.execute(stmt)
-            result = [row[0].to_read_model() for row in result.all()]
-            return result.all()
+        stmt = select(self.model)
+        result = await self.session.execute(stmt)
+        result = [row[0].to_read_model() for row in result.all()]
+        return result.all()
+
+    async def find_one(self, **filter_by):
+        stmt = select(self.model).filter_by(**filter_by)
+        result = await self.session.execute(stmt)
+        result = result.scalar_one().to_read_model()
+        return result

@@ -20,3 +20,12 @@ class Tasks(Base):
             author_id=self.author_id,
             assignee_id=self.assignee_id
         )
+
+
+class TaskHistory(Base):
+    __tablename__ = 'taskhistory'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    taks_id: Mapped[int] = mapped_column(ForeignKey('tasks.id'))
+    previous_assignee_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    new_assignee_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
