@@ -4,14 +4,17 @@ from utils.uow import InerfaceUnitofWork
 
 class TasksService:
 
-    async def add_task(self, task: TaskSchemaAdd):
+    async def add_task(self, uow: InerfaceUnitofWork, task: TaskSchemaAdd):
         tasks_dict = task.model_dump()
-        task_id = await self.tasks_repo.add_one(tasks_dict)
-        return task_id
+        async with uow:
+            task_id = await uow.tasks.add_one(tasks_dict)
+            await uow.commit()
+            return task_id
 
-    async def get_tasks(self):
-        tasks = await self.task_repo.find_all()
-        return tasks
+    async def get_tasks(self, uow: InerfaceUnitofWork):
+        async with uow:
+            tasks = await uow.tasks.find_all()
+            return tasks
 
     async def edit_task(self, uow: InerfaceUnitofWork, task_id: int, task: TaskSchemaEdit):
         task_dict = task.model_dump()
@@ -29,3 +32,8 @@ class TasksService:
             task_history_log = task_history_log.model_dump()
             await uow.task_history.add_one(task_history_log)
             await uow.commit()
+
+    async def get_task_history(self, uow: InerfaceUnitofWork):
+        async with uow:
+            history = await uow.task_history()
+            return history

@@ -1,29 +1,34 @@
 from typing import Type
-
+from abc import ABC, abstractmethod
 from db.db import get_async_session
 from repositories.task_history import TaskHistoryRepository
 from repositories.tasks import TasksRepository
 
 
-class InerfaceUnitofWork:
+class InerfaceUnitofWork(ABC):
 
     tasks: Type[TasksRepository]
     task_history: Type[TaskHistoryRepository]
 
+    @abstractmethod
     def __init__(self):
-        pass
+        ...
 
+    @abstractmethod
     async def __aenter__(self):
-        pass
+        ...
 
-    async def __aexit(self, *args):
-        pass
+    @abstractmethod
+    async def __aexit__(self, *args):
+        ...
 
+    @abstractmethod
     async def commit(self):
-        pass
+        ...
 
+    @abstractmethod
     async def rollback(self):
-        pass
+        ...
 
 
 class UnitofWork:
@@ -32,11 +37,14 @@ class UnitofWork:
         self.session_factory = get_async_session
 
     async def __aenter__(self):
-        self.session = self.session_factory()
+        self.session = await self.session_factory().__anext__()
+        # self.session = self.session_factory()
+
         self.tasks = TasksRepository(self.session)
         self.task_history = TaskHistoryRepository(self.session)
+        return self
 
-    async def __aexit(self, *args):
+    async def __aexit__(self, *args):
         await self.rollback()
         await self.session.close()
 

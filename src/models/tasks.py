@@ -2,7 +2,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db.db import Base
-from schemas.tasks import TaskSchema
+from schemas.tasks import TaskHistorySchema, TaskSchema
 
 
 class Tasks(Base):
@@ -29,3 +29,11 @@ class TaskHistory(Base):
     taks_id: Mapped[int] = mapped_column(ForeignKey('tasks.id'))
     previous_assignee_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     new_assignee_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+
+    def to_read_model(self) -> TaskSchema:
+        return TaskHistorySchema(
+            id=self.id,
+            title=self.title,
+            previous_assignee_id=self.previous_assignee_id,
+            new_assignee_id=self.new_assignee_id
+        )

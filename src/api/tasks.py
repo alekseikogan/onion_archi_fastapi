@@ -1,13 +1,6 @@
-from typing import Annotated
+from fastapi import APIRouter
 
-from fastapi import APIRouter, Depends
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from api.dependencies import UOWDep, tasks_service
-from db.db import get_async_session
-from models.tasks import Tasks
-from repositories.tasks import TasksRepository
+from api.dependencies import UOWDep
 from schemas.tasks import TaskSchemaAdd, TaskSchemaEdit
 from services.tasks import TasksService
 
@@ -19,20 +12,29 @@ router = APIRouter(
 
 @router.get('')
 async def get_tasks(
-    tasks_service: Annotated[TasksService, Depends(tasks_service)]
+    uow: UOWDep
 ):
     """Получение всех задач из БД."""
-    tasks = await tasks_service.get_tasks()
+    tasks = await TasksService().get_tasks(uow)
+    return tasks
+
+
+@router.get('/history')
+async def get_task_history(
+    uow: UOWDep
+):
+    """Получение всех задач из БД."""
+    tasks = await TasksService().get_task_history(uow)
     return tasks
 
 
 @router.post('')
 async def add_task(
     task: TaskSchemaAdd,
-    tasks_service: Annotated[TasksService, Depends(tasks_service)]
+    uow: UOWDep
 ):
     """Добавление задачи в базу данных."""
-    task_id = await tasks_service.add_task(task)
+    task_id = await TasksService().add_task(uow, task)
     return {'task_id': task_id}
 
 
@@ -42,5 +44,5 @@ async def edit_task(
     task: TaskSchemaEdit,
     uow: UOWDep
 ):
-    await TasksService.edit_task(uow, id, task)
+    await TasksService().edit_task(uow, id, task)
     return {'status': 'OK'}
