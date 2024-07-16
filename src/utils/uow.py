@@ -1,6 +1,7 @@
-from typing import Type
 from abc import ABC, abstractmethod
-from db.db import get_async_session
+from typing import Type
+
+from db.db import async_session_maker, get_async_session
 from repositories.task_history import TaskHistoryRepository
 from repositories.tasks import TasksRepository
 
@@ -31,14 +32,16 @@ class InerfaceUnitofWork(ABC):
         ...
 
 
-class UnitofWork:
+class UnitofWork(InerfaceUnitofWork):
 
     def __init__(self):
-        self.session_factory = get_async_session
+        # создание фабрики для сессий
+        self.session_factory = async_session_maker
+        # self.session_factory = get_async_session
 
     async def __aenter__(self):
-        self.session = await self.session_factory().__anext__()
-        # self.session = self.session_factory()
+        # self.session = await self.session_factory().__anext__()
+        self.session = self.session_factory()
 
         self.tasks = TasksRepository(self.session)
         self.task_history = TaskHistoryRepository(self.session)

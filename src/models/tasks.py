@@ -26,14 +26,14 @@ class TaskHistory(Base):
     __tablename__ = 'taskhistory'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    taks_id: Mapped[int] = mapped_column(ForeignKey('tasks.id'))
+    task_id: Mapped[int] = mapped_column(ForeignKey('tasks.id'))
     previous_assignee_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     new_assignee_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
 
     def to_read_model(self) -> TaskSchema:
         return TaskHistorySchema(
             id=self.id,
-            title=self.title,
+            task_id=self.task_id,
             previous_assignee_id=self.previous_assignee_id,
             new_assignee_id=self.new_assignee_id
         )

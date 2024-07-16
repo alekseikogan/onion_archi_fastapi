@@ -5,6 +5,7 @@ from utils.uow import InerfaceUnitofWork
 class TasksService:
 
     async def add_task(self, uow: InerfaceUnitofWork, task: TaskSchemaAdd):
+        """Добавить задачу."""
         tasks_dict = task.model_dump()
         async with uow:
             task_id = await uow.tasks.add_one(tasks_dict)
@@ -12,11 +13,13 @@ class TasksService:
             return task_id
 
     async def get_tasks(self, uow: InerfaceUnitofWork):
+        """Получить всё задачи."""
         async with uow:
             tasks = await uow.tasks.find_all()
             return tasks
 
     async def edit_task(self, uow: InerfaceUnitofWork, task_id: int, task: TaskSchemaEdit):
+        """Изменить задачу."""
         task_dict = task.model_dump()
 
         async with uow:
@@ -34,6 +37,7 @@ class TasksService:
             await uow.commit()
 
     async def get_task_history(self, uow: InerfaceUnitofWork):
+        """Получить историю задач."""
         async with uow:
             history = await uow.task_history()
             return history
